@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기사 수정 도우미 — 편집 데스크</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root {
+  --bg: #FAFAF9;
+  --bg-panel: #FFFFFF;
+  --bg-subtle: #F5F5F4;
+  --bg-muted: #E7E5E4;
+  --border: #D6D3D1;
+  --border-light: #E7E5E4;
+  --text: #1C1917;
+  --text-secondary: #78716C;
+  --text-muted: #A8A29E;
+  --accent: #B45309;
+  --accent-light: #FEF3C7;
+  --accent-bg: #FFFBEB;
+  --critical: #DC2626;
+  --critical-bg: #FEF2F2;
+  --critical-border: #FECACA;
+  --warning: #D97706;
+  --warning-bg: #FFFBEB;
+  --warning-border: #FDE68A;
+  --suggestion: #2563EB;
+  --suggestion-bg: #EFF6FF;
+  --suggestion-border: #BFDBFE;
+  --success: #16A34A;
+  --success-bg: #F0FDF4;
+  --success-border: #BBF7D0;
+  --shadow-sm: 0 1px 2px rgba(28,25,23,.05);
+  --shadow: 0 1px 3px rgba(28,25,23,.1), 0 1px 2px rgba(28,25,23,.06);
+  --shadow-lg: 0 10px 15px -3px rgba(28,25,23,.1), 0 4px 6px rgba(28,25,23,.05);
+  --radius: 8px;
+  --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+.dark {
+  --bg: #0C0A09;
+  --bg-panel: #1C1917;
+  --bg-subtle: #292524;
+  --bg-muted: #44403C;
+  --border: #44403C;
+  --border-light: #292524;
+  --text: #FAFAF9;
+  --text-secondary: #A8A29E;
+  --text-muted: #78716C;
+  --accent: #F59E0B;
+  --accent-light: #451A03;
+  --accent-bg: #1C1917;
+  --critical-bg: #1C1917;
+  --critical-border: #450A0A;
+  --warning-bg: #1C1917;
+  --warning-border: #451A03;
+  --suggestion-bg: #1C1917;
+  --suggestion-border: #1E3A5F;
+  --success-bg: #1C1917;
+  --success-border: #052E16;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+  --shadow: 0 1px 3px rgba(0,0,0,.4);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,.4);
+}
+html { font-size: 15px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 14px;
+}
+.header-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.header-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+/* API Key */
+.api-key-section {
+  display: flex; align-items: center; gap: 8px;
+}
+.api-key-input {
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-subtle);
+  color: var(--text);
+  width: 240px;
+  transition: border-color .15s;
+}
+.api-key-input:focus { outline: none; border-color: var(--accent); }
+.api-key-input::placeholder { color: var(--text-muted); }
+
+/* Buttons */
+.btn {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+  display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg-subtle); border-color: var(--text-muted); }
+.btn-primary {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+  font-weight: 600;
+}
+.btn-primary:hover { opacity: .88; }
+.btn-primary:disabled {
+  opacity: .4; cursor: not-allowed;
+}
+
+/* Icon button */
+.icon-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.icon-btn:hover { background: var(--bg-subtle); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+/* Main Layout */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel-left { border-right: 1px solid var(--border); }
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-subtle);
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.panel-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.panel-label-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Editor */
+.editor-area {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.85;
+  letter-spacing: -0.01em;
+  padding: 20px;
+}
+.editor-area::placeholder { color: var(--text-muted); }
+.editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-panel);
+  flex-shrink: 0;
+}
+.char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.char-count.over { color: var(--critical); font-weight: 600; }
+
+/* Results */
+.result-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.result-empty svg {
+  width: 40px; height: 40px;
+  margin-bottom: 16px;
+  opacity: .3;
+}
+.result-empty h3 { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.result-empty p { font-size: 12px; opacity: .7; }
+
+/* Loading */
+.loading-indicator {
+  display: flex; align-items: center; gap: 8px;
+  padding: 16px 20px;
+  font-size: 12px; color: var(--text-secondary);
+}
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Skeleton */
+.skeleton { background: var(--bg-muted); border-radius: 4px; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* Score */
+.score-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.score-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.score-badge {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: -0.02em;
+}
+.score-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.score-meta {
+  display: flex; gap: 12px; margin-top: 12px;
+}
+.score-meta-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text-secondary);
+  background: var(--bg-subtle);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.score-meta-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.score-meta-count { font-weight: 600; color: var(--text); }
+
+/* Revised Text */
+.revised-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.revised-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--success);
+  margin-bottom: 12px;
+}
+.revised-text {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: 14.5px;
+  line-height: 1.85;
+  letter-spacing: -0.01em;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Issues */
+.issues-section {
+  padding: 20px;
+}
+.issues-title {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.issue-card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  margin-bottom: 10px;
+  overflow: hidden;
+  animation: fadeInUp .3s ease-out both;
+}
+.issue-card:nth-child(2){animation-delay:.05s}
+.issue-card:nth-child(3){animation-delay:.1s}
+.issue-card:nth-child(4){animation-delay:.15s}
+.issue-card:nth-child(5){animation-delay:.2s}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.issue-card-inner {
+  padding: 14px 16px;
+  border-left: 3px solid transparent;
+}
+.issue-card.critical .issue-card-inner { border-left-color: var(--critical); background: var(--critical-bg); }
+.issue-card.warning .issue-card-inner { border-left-color: var(--warning); background: var(--warning-bg); }
+.issue-card.suggestion .issue-card-inner { border-left-color: var(--suggestion); background: var(--suggestion-bg); }
+
+.issue-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.issue-severity {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 4px;
+}
+.critical .issue-severity { background: var(--critical); color: white; }
+.warning .issue-severity { background: var(--warning); color: white; }
+.suggestion .issue-severity { background: var(--suggestion); color: white; }
+
+.issue-message {
+  font-size: 13px; line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.issue-detail {
+  font-size: 12px;
+  line-height: 1.55;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  margin-bottom: 6px;
+}
+.issue-detail-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.issue-detail-label.before { color: var(--critical); }
+.issue-detail-label.after { color: var(--success); }
+.issue-detail-text { color: var(--text-secondary); }
+.issue-principle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Error */
+.error-panel {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%; padding: 40px; text-align: center;
+}
+.error-panel svg { width: 32px; height: 32px; color: var(--critical); margin-bottom: 12px; }
+.error-panel p { font-size: 13px; color: var(--critical); font-weight: 500; }
+.error-panel small { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* Mode badge */
+.mode-badge {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: 10px;
+  letter-spacing: 0.02em;
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+}
+.mode-badge.full { background: var(--accent-light); color: var(--accent); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .panel-left { border-right: none; border-bottom: 1px solid var(--border); max-height: 45vh; }
+  .header-subtitle { display: none; }
+  .api-key-input { width: 140px; }
+}
+
+/* Scrollbar */
+.panel-body::-webkit-scrollbar { width: 6px; }
+.panel-body::-webkit-scrollbar-track { background: transparent; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--bg-muted); border-radius: 3px; }
+.panel-body::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">편</div>
+    <span class="header-title">기사 수정 도우미</span>
+    <span class="header-subtitle">편집 데스크</span>
+  </div>
+  <div class="header-right">
+    <div class="api-key-section">
+      <input type="password" id="apiKey" class="api-key-input" placeholder="Anthropic API Key" autocomplete="off">
+      <button class="icon-btn" onclick="toggleApiKeyVisibility()" title="키 표시/숨김" aria-label="API 키 표시 토글">
+        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <button class="icon-btn" onclick="toggleTheme()" title="다크모드 토글" aria-label="테마 전환">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main">
+  <!-- Left: Editor -->
+  <div class="panel panel-left">
+    <div class="panel-header">
+      <span class="panel-label">
+        <span class="panel-label-dot" style="background:var(--text-muted)"></span>
+        원문 입력
+      </span>
+    </div>
+    <div class="panel-body">
+      <textarea id="editor" class="editor-area" placeholder="기사 초안을 붙여넣거나 직접 작성하세요...&#10;&#10;예시:&#10;서울시가 주거 안정을 위한 새로운 정책을 발표했다. 이번 정책은 청년층의 주거 문제를 해결하기 위한 것으로, 다양한 지원 방안이 포함되어 있다. 관계자에 따르면 매우 획기적인 정책이 될 것으로 예상되어진다."></textarea>
+    </div>
+    <div class="editor-footer">
+      <span id="charCount" class="char-count">0 / 10,000자</span>
+      <button id="analyzeBtn" class="btn btn-primary" onclick="analyze()" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        분석하기
+      </button>
+    </div>
+  </div>
+
+  <!-- Right: Results -->
+  <div class="panel panel-right">
+    <div class="panel-header">
+      <span class="panel-label">
+        <span class="panel-label-dot" style="background:var(--success)"></span>
+        수정 결과
+      </span>
+      <div id="resultMeta"></div>
+    </div>
+    <div class="panel-body" id="resultPanel">
+      <div class="result-empty" id="emptyState">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <h3>기사를 입력하고 분석을 시작하세요</h3>
+        <p>리드, 문장, 구조, 정확성, 스타일, 윤리 6개 영역 분석</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Theme ──
+function toggleTheme() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && matchMedia('(prefers-color-scheme:dark)').matches)) {
+  document.documentElement.classList.add('dark');
+}
+
+// ── API Key visibility ──
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('apiKey');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// ── Load saved API key ──
+const savedKey = localStorage.getItem('anthropic_api_key');
+if (savedKey) document.getElementById('apiKey').value = savedKey;
+document.getElementById('apiKey').addEventListener('change', function() {
+  localStorage.setItem('anthropic_api_key', this.value);
+});
+
+// ── Character count ──
+const editor = document.getElementById('editor');
+const charCountEl = document.getElementById('charCount');
+const analyzeBtn = document.getElementById('analyzeBtn');
+editor.addEventListener('input', () => {
+  const len = editor.value.length;
+  charCountEl.textContent = `${len.toLocaleString()} / 10,000자`;
+  charCountEl.className = len > 10000 ? 'char-count over' : 'char-count';
+  analyzeBtn.disabled = len === 0 || len > 10000;
+});
+
+// ── System Prompt ──
+const SYSTEM_PROMPT = `당신은 한국 신문 기사를 분석하는 편집 전문가입니다.
+
+## 기사 수정 핵심 원칙
+
+### 1. 문체와 스타일
+- 간결한 문장: 50~60자 이내, 단문 사용. 복문("~했으며, ~했는데")을 피하고 단문으로 끊는다.
+- 능동태 사용: "~되었다" → "~했다". 이중 피동("되어졌다")은 문법 오류.
+- 불필요 수식어 제거: '매우', '상당히' 등 모호한 부사 삭제. 겹말("과반수 이상") 삭제. 구체적 수치로 대체.
+- 독자 눈높이: 전문용어를 쉬운 말로. "금번 시정 조치" → "이번 조치"
+
+### 2. 구조
+- 역피라미드: 가장 중요한 정보를 앞에 배치
+- 리드: 60자 이내로 핵심 요약. Duh Lead(당연한 사실만 전달하는 리드) 회피. 누가·무엇을·얼마나를 담아라.
+- 단락: 한 단락에 하나의 소주제. 2~3문장 단위. 모바일 가독성 고려.
+
+### 3. 정확성
+- 팩트체크: 이름, 직책, 숫자 검증
+- 출처 명시: 모든 정보에 구체적 출처(이름, 직함, 소속). "관계자에 따르면" 같은 모호한 출처 금지.
+- 인용문: 직접 인용은 큰따옴표. 발언 왜곡 금지. 직접인용과 간접인용 혼용 경계.
+- 수치: 세부 항목 합산이 총액과 일치하는지 크로스체크
+
+### 4. 윤리
+- 공정 보도: 양쪽 의견 균형. 비판 대상에게 반론 기회.
+- 선정적 표현 자제: "충격", "경악", "멘붕" 등 감정적 수식어 삭제. 사실 중심 서술.
+- 확인 없는 보도: "드러났다", "밝혀졌다"는 공식 확인 후에만. 수사 단계에서는 "의혹이 제기됐다"
+
+## 분석 및 수정 지침
+1. 입력된 기사를 위 원칙에 따라 분석하세요
+2. 발견된 이슈를 목록으로 정리하세요 (severity: critical/warning/suggestion)
+3. 원문 전체를 교정한 수정 기사를 작성하세요
+
+## 응답 형식 (반드시 순수 JSON만 출력, 설명 텍스트 금지)
+{
+  "issues": [
+    {
+      "severity": "critical|warning|suggestion",
+      "rule": "규칙 이름",
+      "message": "문제 설명",
+      "original": "원문 발췌",
+      "suggestion": "수정 제안",
+      "principle": "적용 원칙 (예: 1부 1-2. 능동태 사용)"
+    }
+  ],
+  "revisedText": "수정된 전체 기사 (원문의 모든 문제를 교정한 완성본)"
+}`;
+
+// ── Rule-based checks ──
+function runRuleChecks(text) {
+  const issues = [];
+  let id = 0;
+
+  // Helper
+  function getCtx(txt, idx, len) {
+    const s = Math.max(0, idx - 12), e = Math.min(txt.length, idx + len + 12);
+    let r = txt.slice(s, e);
+    if (s > 0) r = '…' + r;
+    if (e < txt.length) r = r + '…';
+    return r;
+  }
+
+  // 1. Sentence length
+  text.split(/(?<=[.?!。])\s*/).forEach(s => {
+    const t = s.trim();
+    if (t.length > 60) {
+      issues.push({ id: `r-${++id}`, severity: 'warning', rule: 'sentence-length', message: `이 문장은 ${t.length}자입니다. 50~60자 이내로 줄이세요.`, original: t.slice(0,60)+'…', principle: '1부 1-1. 간결한 문장' });
+    }
+  });
+
+  // 2. Double passive (critical)
+  let m;
+  const dp = /되어졌|어져졌|여져졌/g;
+  while ((m = dp.exec(text)) !== null) {
+    issues.push({ id: `r-${++id}`, severity: 'critical', rule: 'passive-voice', message: '이중 피동 표현입니다. 능동태로 전환하세요.', original: getCtx(text, m.index, m[0].length), principle: '1부 1-2. 능동태 사용' });
+  }
+
+  // 3. Passive voice
+  const pv = /되었다|어졌다|에 의해|된 것으로|되고 있|되어 있/g;
+  while ((m = pv.exec(text)) !== null) {
+    if (/되어졌/.test(getCtx(text, m.index, m[0].length))) continue;
+    issues.push({ id: `r-${++id}`, severity: 'warning', rule: 'passive-voice', message: '피동태 표현입니다. 능동태로 전환하세요.', original: getCtx(text, m.index, m[0].length), principle: '1부 1-2. 능동태 사용' });
+  }
+
+  // 4. Translation style
+  const ts = [[/에\s*있어서/g,"'~에 있어서'는 번역투입니다."],[/에\s*대해서/g,"'~에 대해서'는 번역투입니다."],[/와\s*관련하여/g,"'~와 관련하여'는 번역투입니다."],[/하지\s*않으면\s*안\s*된다/g,"'~하지 않으면 안 된다'는 번역투입니다."],[/라고\s*할\s*수\s*있다/g,"'~라고 할 수 있다'는 번역투입니다."]];
+  for (const [pat, msg] of ts) {
+    while ((m = pat.exec(text)) !== null) {
+      issues.push({ id: `r-${++id}`, severity: 'warning', rule: 'translation-style', message: msg, original: getCtx(text, m.index, m[0].length), principle: '1부, 2부 사례 5~6' });
+    }
+  }
+
+  // 5. Unnecessary modifiers
+  const um = /매우|상당히|다소|꽤|아주|정말|굉장히|엄청|무척/g;
+  while ((m = um.exec(text)) !== null) {
+    issues.push({ id: `r-${++id}`, severity: 'suggestion', rule: 'unnecessary-modifier', message: `'${m[0]}' — 모호한 수식어입니다. 구체적 수치로 대체하세요.`, original: getCtx(text, m.index, m[0].length), principle: '1부 1-3' });
+  }
+
+  // 6. Cliches
+  for (const c of ['귀추가 주목된다','박차를 가한다','총력을 기울일 방침','큰 충격을 주고 있다','시급하다는 목소리','파장이 예상된다']) {
+    let idx = text.indexOf(c);
+    while (idx !== -1) {
+      issues.push({ id: `r-${++id}`, severity: 'suggestion', rule: 'cliche', message: `'${c}' — 상투적 표현입니다. 구체적 사실로 대체하세요.`, original: c, principle: '2부 사례 27' });
+      idx = text.indexOf(c, idx + c.length);
+    }
+  }
+
+  // 7. Sensational
+  const se = /충격|경악|멘붕|발칵|참혹|처참|소름|전율/g;
+  while ((m = se.exec(text)) !== null) {
+    issues.push({ id: `r-${++id}`, severity: 'warning', rule: 'sensational', message: `'${m[0]}' — 선정적 표현입니다.`, original: getCtx(text, m.index, m[0].length), principle: '3부 13. 선정적 표현' });
+  }
+
+  // 8. Redundancy
+  for (const [r, fix] of [['과반수 이상','과반수'],['역전 앞','역전(역 앞)'],['미리 예방','예방'],['사전 예고','예고'],['다시 재개','재개'],['처음 시작','시작']]) {
+    let idx = text.indexOf(r);
+    while (idx !== -1) {
+      issues.push({ id: `r-${++id}`, severity: 'warning', rule: 'redundancy', message: `겹말입니다. '${fix}'으로 줄이세요.`, original: r, suggestion: fix, principle: '1부 1-3' });
+      idx = text.indexOf(r, idx + r.length);
+    }
+  }
+
+  // 9. Vague source
+  const vs = /관계자에 따르면|업계에서는|전문가들은|일각에서는|소식통에 따르면/g;
+  while ((m = vs.exec(text)) !== null) {
+    issues.push({ id: `r-${++id}`, severity: 'warning', rule: 'vague-source', message: '출처가 모호합니다. 이름, 직함, 소속을 밝히세요.', original: getCtx(text, m.index, m[0].length), principle: '1부 3-2, 3부 2. 출처 누락' });
+  }
+
+  // 10. Assertive unverified
+  const au = /드러났다|밝혀졌다|확인됐다|판명됐다/g;
+  while ((m = au.exec(text)) !== null) {
+    const before = text.slice(Math.max(0, m.index - 10), m.index);
+    if (/공식|조사 결과|수사 결과/.test(before)) continue;
+    issues.push({ id: `r-${++id}`, severity: 'suggestion', rule: 'assertive-unverified', message: '단정적 표현입니다. 확인 전에는 "의혹이 제기됐다"로 쓰세요.', original: getCtx(text, m.index, m[0].length), principle: '3부 12. 확인 없는 보도' });
+  }
+
+  return issues;
+}
+
+// ── Score ──
+function calcScore(issues) {
+  let d = 0;
+  for (const i of issues) {
+    if (i.severity === 'critical') d += 15;
+    else if (i.severity === 'warning') d += 7;
+    else d += 3;
+  }
+  return Math.max(0, 100 - d);
+}
+
+function scoreColor(score) {
+  if (score >= 90) return { bg: 'var(--success-bg)', border: 'var(--success-border)', color: 'var(--success)' };
+  if (score >= 70) return { bg: 'var(--suggestion-bg)', border: 'var(--suggestion-border)', color: 'var(--suggestion)' };
+  if (score >= 40) return { bg: 'var(--warning-bg)', border: 'var(--warning-border)', color: 'var(--warning)' };
+  return { bg: 'var(--critical-bg)', border: 'var(--critical-border)', color: 'var(--critical)' };
+}
+
+// ── Render ──
+function renderResults(issues, revisedText, mode) {
+  const panel = document.getElementById('resultPanel');
+  const meta = document.getElementById('resultMeta');
+  const score = calcScore(issues);
+  const sc = scoreColor(score);
+  const crit = issues.filter(i => i.severity === 'critical').length;
+  const warn = issues.filter(i => i.severity === 'warning').length;
+  const sugg = issues.filter(i => i.severity === 'suggestion').length;
+
+  meta.innerHTML = `<span class="mode-badge ${mode === 'full' ? 'full' : ''}">${mode === 'full' ? 'AI + 규칙' : '규칙만'}</span>`;
+
+  let html = '';
+
+  // Score
+  html += `<div class="score-section">
+    <div class="score-row">
+      <span class="score-label">종합 점수</span>
+      <span class="score-badge" style="background:${sc.bg};border:1px solid ${sc.border};color:${sc.color}">${score}</span>
+    </div>
+    <div class="score-meta">
+      ${crit ? `<span class="score-meta-item"><span class="score-meta-dot" style="background:var(--critical)"></span>심각 <span class="score-meta-count">${crit}</span></span>` : ''}
+      ${warn ? `<span class="score-meta-item"><span class="score-meta-dot" style="background:var(--warning)"></span>경고 <span class="score-meta-count">${warn}</span></span>` : ''}
+      ${sugg ? `<span class="score-meta-item"><span class="score-meta-dot" style="background:var(--suggestion)"></span>제안 <span class="score-meta-count">${sugg}</span></span>` : ''}
+      ${!crit && !warn && !sugg ? `<span class="score-meta-item"><span class="score-meta-dot" style="background:var(--success)"></span>이슈 없음</span>` : ''}
+    </div>
+  </div>`;
+
+  // Revised text
+  if (revisedText) {
+    html += `<div class="revised-section">
+      <div class="revised-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        수정된 기사
+      </div>
+      <div class="revised-text">${escHtml(revisedText)}</div>
+    </div>`;
+  }
+
+  // Issues
+  if (issues.length > 0) {
+    html += `<div class="issues-section"><div class="issues-title">상세 이슈 (${issues.length}건)</div>`;
+    for (const i of issues) {
+      html += `<div class="issue-card ${i.severity}"><div class="issue-card-inner">
+        <div class="issue-header">
+          <span class="issue-severity">${i.severity === 'critical' ? '심각' : i.severity === 'warning' ? '경고' : '제안'}</span>
+        </div>
+        <div class="issue-message">${escHtml(i.message)}</div>`;
+      if (i.original) {
+        html += `<div class="issue-detail"><div class="issue-detail-label before">원문</div><div class="issue-detail-text">${escHtml(i.original)}</div></div>`;
+      }
+      if (i.suggestion) {
+        html += `<div class="issue-detail"><div class="issue-detail-label after">수정 제안</div><div class="issue-detail-text">${escHtml(i.suggestion)}</div></div>`;
+      }
+      if (i.principle) {
+        html += `<div class="issue-principle">📌 ${escHtml(i.principle)}</div>`;
+      }
+      html += `</div></div>`;
+    }
+    html += '</div>';
+  }
+
+  panel.innerHTML = html;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showLoading() {
+  const panel = document.getElementById('resultPanel');
+  document.getElementById('resultMeta').innerHTML = '';
+  panel.innerHTML = `
+    <div class="loading-indicator"><div class="spinner"></div> 기사 분석 중…</div>
+    <div style="padding:0 20px 20px">
+      <div class="skeleton" style="height:120px;margin-bottom:12px;border-radius:var(--radius)"></div>
+      <div class="skeleton" style="height:200px;margin-bottom:12px;border-radius:var(--radius)"></div>
+      <div class="skeleton" style="height:80px;border-radius:var(--radius)"></div>
+    </div>`;
+}
+
+function showError(msg) {
+  const panel = document.getElementById('resultPanel');
+  document.getElementById('resultMeta').innerHTML = '';
+  panel.innerHTML = `<div class="error-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    <p>${escHtml(msg)}</p>
+    <small>다시 시도해 주세요</small>
+  </div>`;
+}
+
+// ── Analyze ──
+async function analyze() {
+  const text = editor.value.trim();
+  if (!text) return;
+
+  analyzeBtn.disabled = true;
+  showLoading();
+
+  // Always run rule checks
+  const ruleIssues = runRuleChecks(text);
+
+  // Check for API key
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) {
+    analyzeBtn.disabled = false;
+    renderResults(ruleIssues, null, 'rules-only');
+    return;
+  }
+
+  // AI analysis
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: '다음 기사 초안을 기사수정가이드에 따라 분석해주세요:\n\n' + text }]
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error?.message || `API 오류 (${res.status})`);
+    }
+
+    const data = await res.json();
+    const content = data.content?.[0]?.text || '';
+
+    // Parse JSON (handle code block wrapping)
+    let jsonText = content.trim();
+    if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    }
+
+    const parsed = JSON.parse(jsonText);
+    const aiIssues = (parsed.issues || []).map((item, i) => ({
+      id: `ai-${i+1}`,
+      severity: item.severity,
+      rule: item.rule,
+      message: item.message,
+      original: item.original,
+      suggestion: item.suggestion,
+      principle: item.principle
+    }));
+
+    // Merge: rule issues + AI issues (deduplicate by checking similar messages)
+    const allIssues = [...ruleIssues];
+    for (const ai of aiIssues) {
+      const isDupe = ruleIssues.some(ri =>
+        ri.original && ai.original &&
+        ri.original.includes(ai.original?.slice(0, 15)) &&
+        ri.rule === ai.rule
+      );
+      if (!isDupe) allIssues.push(ai);
+    }
+
+    renderResults(allIssues, parsed.revisedText, 'full');
+
+  } catch (err) {
+    console.error('AI analysis failed:', err);
+    // Fallback: show rule-based results with error note
+    if (ruleIssues.length > 0) {
+      renderResults(ruleIssues, null, 'rules-only');
+    } else {
+      showError(err.message || 'AI 분석 중 오류가 발생했습니다.');
+    }
+  } finally {
+    analyzeBtn.disabled = editor.value.trim().length === 0;
+  }
+}
+</script>
+</body>
+</html>
