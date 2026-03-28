@@ -759,28 +759,29 @@ function renderResults(issues, revisedText, mode) {
     </div>
   </div>`;
 
-  // Comparison: 원문 vs 수정문
-  if (revisedText) {
-    const originalText = editor.value.trim();
-    html += `<div class="comparison-section">
-      <div class="comparison-grid">
-        <div class="comparison-col">
-          <div class="comparison-col-header">
-            <span class="dot" style="background:var(--text-muted)"></span>
-            원문
-          </div>
-          <div class="comparison-col-body">${escHtml(originalText)}</div>
+  // Comparison: 원문 vs 수정문 (항상 표시)
+  const originalText = editor.value.trim();
+  html += `<div class="comparison-section">
+    <div class="comparison-grid">
+      <div class="comparison-col">
+        <div class="comparison-col-header">
+          <span class="dot" style="background:var(--text-muted)"></span>
+          원문
         </div>
-        <div class="comparison-col revised">
-          <div class="comparison-col-header">
-            <span class="dot" style="background:var(--success)"></span>
-            수정 후
-          </div>
-          <div class="comparison-col-body">${escHtml(revisedText)}</div>
-        </div>
+        <div class="comparison-col-body">${escHtml(originalText)}</div>
       </div>
-    </div>`;
-  }
+      <div class="comparison-col revised">
+        <div class="comparison-col-header">
+          <span class="dot" style="background:var(--success)"></span>
+          수정 후
+        </div>
+        <div class="comparison-col-body">${revisedText
+          ? escHtml(revisedText)
+          : '<div style="color:var(--text-muted);font-size:13px;font-style:italic;padding:20px 0;text-align:center">API 키를 입력하면 AI가 수정한 기사가 여기에 표시됩니다</div>'
+        }</div>
+      </div>
+    </div>
+  </div>`;
 
   // Issues
   if (issues.length > 0) {
