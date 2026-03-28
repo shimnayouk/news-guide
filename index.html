@@ -318,28 +318,55 @@ body {
 }
 .score-meta-count { font-weight: 600; color: var(--text); }
 
-/* Revised Text */
-.revised-section {
+/* Comparison View */
+.comparison-section {
   padding: 20px;
   border-bottom: 1px solid var(--border-light);
 }
-.revised-label {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 600;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--success);
-  margin-bottom: 12px;
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
-.revised-text {
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
+@media (max-width: 900px) {
+  .comparison-grid { grid-template-columns: 1fr; }
+}
+.comparison-col {
   border-radius: var(--radius);
-  padding: 16px;
-  font-size: 14.5px;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+.comparison-col.revised {
+  border-color: var(--success-border);
+}
+.comparison-col-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-subtle);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.comparison-col.revised .comparison-col-header {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
+}
+.comparison-col-header .dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.comparison-col-body {
+  padding: 14px;
+  font-size: 14px;
   line-height: 1.85;
   letter-spacing: -0.01em;
   white-space: pre-wrap;
   word-break: break-word;
+  max-height: 500px;
+  overflow-y: auto;
+}
+.comparison-col.revised .comparison-col-body {
+  background: var(--success-bg);
 }
 
 /* Issues */
@@ -732,14 +759,26 @@ function renderResults(issues, revisedText, mode) {
     </div>
   </div>`;
 
-  // Revised text
+  // Comparison: 원문 vs 수정문
   if (revisedText) {
-    html += `<div class="revised-section">
-      <div class="revised-label">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        수정된 기사
+    const originalText = editor.value.trim();
+    html += `<div class="comparison-section">
+      <div class="comparison-grid">
+        <div class="comparison-col">
+          <div class="comparison-col-header">
+            <span class="dot" style="background:var(--text-muted)"></span>
+            원문
+          </div>
+          <div class="comparison-col-body">${escHtml(originalText)}</div>
+        </div>
+        <div class="comparison-col revised">
+          <div class="comparison-col-header">
+            <span class="dot" style="background:var(--success)"></span>
+            수정 후
+          </div>
+          <div class="comparison-col-body">${escHtml(revisedText)}</div>
+        </div>
       </div>
-      <div class="revised-text">${escHtml(revisedText)}</div>
     </div>`;
   }
 
